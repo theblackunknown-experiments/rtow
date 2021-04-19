@@ -1,0 +1,137 @@
+{
+    "build_systems":
+    [
+        {
+            "cmd":
+            [
+                "ninja",
+                "-k",
+                "20"
+            ],
+            "env":
+            {
+                "CLICOLOR_FORCE": "1"
+            },
+            "file_regex": "^[ ]*(.+?)\\(([0-9]+)\\)[ ]*: (.*)$",
+            "name": "vkplaygrounds (MSVC)",
+            "syntax": "Packages/ANSIescape/ANSI.sublime-syntax",
+            "target": "ansi_color_build",
+            "variants":
+            [
+                {
+                    "cmd":
+                    [
+                        "rm",
+                        "-rf",
+                        "*"
+                    ],
+                    "name": "Delete"
+                },
+                {
+                    "cmd":
+                    [
+                        "cmake",
+                        "-Wdev",
+                        "-Wdeprecated",
+                        "-Werror=dev",
+                        "-Werror=deprecated",
+                        "-S",
+                        "C:\\devel\\rtow",
+                        "-B",
+                        ".",
+                        "-G",
+                        "Ninja Multi-Config",
+                        "-DCMAKE_DEFAULT_BUILD_TYPE:STRING=Debug",
+                        "-DCMAKE_VS_JUST_MY_CODE_DEBUGGING:BOOL=ON",
+                        "-DCMAKE_TOOLCHAIN_FILE:PATH=C:\\devel\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake",
+                        "-DVCPKG_TARGET_TRIPLET:STRING=x64-windows"
+                    ],
+                    "name": "Configure"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Debug.ninja",
+                        "-t",
+                        "clean"
+                    ],
+                    "name": "Clean (Debug)"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Debug.ninja",
+                        "-v",
+                        "-k",
+                        "20",
+                        "$file^"
+                    ],
+                    "name": "Current (Debug)",
+                    "selector": "source.c++"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Debug.ninja",
+                        "-v",
+                        "rtow"
+                    ],
+                    "name": "rtow (Debug)"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Release.ninja",
+                        "-t",
+                        "clean"
+                    ],
+                    "name": "Clean (Release)"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Release.ninja",
+                        "-v",
+                        "-k",
+                        "20",
+                        "$file^"
+                    ],
+                    "name": "Current (Release)",
+                    "selector": "source.c++"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Release.ninja",
+                        "-v",
+                        "rtow"
+                    ],
+                    "name": "rtow (Release)"
+                }
+            ],
+            "working_dir": "C:/builds/rtow"
+        }
+    ],
+	"folders":
+	[
+		{
+			"path": "."
+		},
+		{
+			"path": "C:/devel/vkplaygrounds"
+		}
+	],
+    "settings":
+    {
+        "ClangFormat":
+        {
+            "format_on_save": true
+        }
+    }
+}
