@@ -36,15 +36,31 @@ add_executable(rtow)
 
 target_sources(rtow
     PRIVATE
-        main.cpp)
+        main.cpp
+
+        vec3.hpp
+        color.hpp
+        ray.hpp
+)
+
+target_precompile_headers(rtow
+    PRIVATE
+        <charconv>
+
+        <iostream>
+        <iosfwd>
+
+        <cmath>
+        <cstring>
+)
 
 target_compile_definitions(rtow
     PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:
             NOMINMAX
             WIN32_LEAN_AND_MEAN
-            VC_EXTRALEAN
-        >)
+        >
+)
 
 ##############################
 ##          Config          ##
