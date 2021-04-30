@@ -2,6 +2,7 @@
 #include "./vec3.hpp"
 #include "./color.hpp"
 #include "./ray.hpp"
+#include "./intersection.hpp"
 
 #include <charconv>
 #include <iostream>
@@ -10,7 +11,10 @@
 
 color pixel_color( const ray& r )
 {
-    constexpr color a { .5, .7f, 1.f };
+    if ( intersect_sphere( { 0.f, 0.f, -1.f }, 0.5f, r ) )
+        return { 1.f, 0.f, 0.f };
+
+    constexpr color a { .5f, .7f, 1.f };
     constexpr color b { 1.f, 1.f, 1.f };
 
     vec3 unit = normalize( r.direction );
@@ -20,16 +24,16 @@ color pixel_color( const ray& r )
 
 int main( int argc, char* argv[] )
 {
-    int   width        = 255;
-    float aspect_ratio = 16.f / 9.f;
+    int   height       = 480;
+    float aspect_ratio = 4.f / 3.f;
 
     for ( int i = 0; i < argc; ++i )
     {
-        if ( strstr( argv[i], "-w" ) || strstr( argv[i], "--width" ) )
+        if ( strstr( argv[i], "-h" ) || strstr( argv[i], "--height" ) )
         {
             const char*       arg  = argv[i + 1];
             const std::size_t size = std::strlen( arg );
-            std::from_chars( arg, arg + size, width );
+            std::from_chars( arg, arg + size, height );
             ++i;
         }
         else if ( strstr( argv[i], "-as" ) || strstr( argv[i], "--aspect-ratio" ) )
@@ -41,7 +45,7 @@ int main( int argc, char* argv[] )
         }
     }
 
-    int height = static_cast<int>( width / aspect_ratio );
+    int width = static_cast<int>( aspect_ratio * height );
 
     constexpr float viewport_height = 2.f;
     float           viewport_width  = aspect_ratio * viewport_height;
