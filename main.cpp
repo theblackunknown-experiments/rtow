@@ -2,13 +2,18 @@
 #include "./vec3.hpp"
 #include "./color.hpp"
 #include "./ray.hpp"
+
+#include "./camera.hpp"
+
 #include "./intersection_record.hpp"
 #include "./intersection_table_sphere.hpp"
 #include "./intersection_table_collection.hpp"
 
 #include <charconv>
 #include <iostream>
+
 #include <memory>
+#include <random>
 
 #include <cstring>
 
@@ -38,9 +43,11 @@ color pixel_color( const intersection_table& intersector, const ray& r )
 int main( int argc, char* argv[] )
 {
     using namespace rtow;
+
     bool  progress     = false;
     int   height       = 480;
     float aspect_ratio = 4.f / 3.f;
+    int   spp          = 100;
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -58,6 +65,13 @@ int main( int argc, char* argv[] )
             std::from_chars( arg, arg + size, aspect_ratio );
             ++i;
         }
+        else if ( strstr( argv[i], "-spp" ) || strstr( argv[i], "--sample-per-pixel" ) )
+        {
+            const char*       arg  = argv[i + 1];
+            const std::size_t size = std::strlen( arg );
+            std::from_chars( arg, arg + size, spp );
+            ++i;
+        }
         else if ( strstr( argv[i], "--progress" ) )
         {
             progress = true;
@@ -66,17 +80,16 @@ int main( int argc, char* argv[] )
 
     int width = static_cast<int>( aspect_ratio * height );
 
-    constexpr float viewport_height = 2.f;
-    float           viewport_width  = aspect_ratio * viewport_height;
-
-    constexpr float focal_length = 1.f;
-    constexpr point origin { 0.f, 0.f, 0.f };
-    vec3            right { viewport_width, 0.f, 0.f };
-    constexpr vec3  up { 0.f, viewport_height, 0.f };
-
-    auto lower_left = origin - right / 2.f - up / 2.f - vec3 { 0.f, 0.f, focal_length };
+    auto camera = create_camera( simple_camera_parameters {
+        .aspect_ratio    = aspect_ratio,
+        .viewport_height = 2.f,
+        .focal_length    = 1.f,
+    } );
 
     std::ios::sync_with_stdio( false );
+
+    std::random_device                    random_generator;
+    std::uniform_real_distribution<float> jitter( 0.f, 1.f );
 
     intersection_table_collection intersector_collection;
     intersector_collection.emplace( intersection_table_sphere { { 0.f, 0.f, -1.f }, 0.5f } );
@@ -92,14 +105,18 @@ int main( int argc, char* argv[] )
             std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for ( int i = 0; i < width; ++i )
         {
-            auto u = float( i ) / ( width - 1 );
-            auto v = float( j ) / ( height - 1 );
+            color c { 0.f, 0.f, 0.f };
+            for ( int s = 0; s < spp; ++s )
+            {
+                auto u = float( i + jitter( random_generator ) ) / ( width - 1 );
+                auto v = float( j + jitter( random_generator ) ) / ( height - 1 );
 
-            ray r { origin, lower_left + u * right + v * up - origin };
+                ray r = camera.generate( u, v );
 
-            color c = pixel_color( intersector_collection, r );
+                c += pixel_color( intersector_collection, r );
+            }
 
-            write_color( std::cout, c );
+            write_color( std::cout, c, spp );
         }
     }
 

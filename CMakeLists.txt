@@ -38,13 +38,17 @@ target_sources(rtow
     PRIVATE
         main.cpp
 
+        math.hpp
+
+        ray.hpp
+        vec3.hpp
         color.hpp
+
+        camera.hpp
+
         intersection_record.hpp
         intersection_table.hpp
         intersection_table_sphere.hpp
-        math.hpp
-        ray.hpp
-        vec3.hpp
 )
 
 target_precompile_headers(rtow
@@ -58,6 +62,7 @@ target_precompile_headers(rtow
         <cstring>
 
         <memory>
+        <random>
         <utility>
 
         <vector>
