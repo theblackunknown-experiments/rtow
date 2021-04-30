@@ -22,12 +22,19 @@ namespace rtow {
 constexpr float kNear = 1e-3f;
 constexpr float kFar  = 1e3f;
 
-color pixel_color( const intersection_table& intersector, const ray& r )
+template <typename Generator>
+color ray_color( const intersection_table& intersector, Generator&& gen, const ray& r, int bounces )
+
 {
+    if ( bounces < 0 )
+        return { 0.f, 0.f, 0.f };
+
     intersection_record record;
     if ( intersector.intersect( r, kNear, kFar, record ) )
     {
-        return record.front_face ? 0.5f * color { record.normal + 1.f } : color { 0.f, 0.f, 0.f };
+        vec3 target = record.point + record.normal + random_vec3_unit_sphere( gen );
+        // return record.front_face ? 0.5f * color { record.normal + 1.f } : color { 0.f, 0.f, 0.f };
+        return 0.5 * ray_color( intersector, gen, ray { record.point, target - record.point }, bounces - 1 );
     }
 
     constexpr color a { 1.f, 1.f, 1.f };
@@ -48,6 +55,7 @@ int main( int argc, char* argv[] )
     int   height       = 480;
     float aspect_ratio = 4.f / 3.f;
     int   spp          = 100;
+    int   bounces      = 50;
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -70,6 +78,13 @@ int main( int argc, char* argv[] )
             const char*       arg  = argv[i + 1];
             const std::size_t size = std::strlen( arg );
             std::from_chars( arg, arg + size, spp );
+            ++i;
+        }
+        else if ( strstr( argv[i], "--bounces" ) )
+        {
+            const char*       arg  = argv[i + 1];
+            const std::size_t size = std::strlen( arg );
+            std::from_chars( arg, arg + size, bounces );
             ++i;
         }
         else if ( strstr( argv[i], "--progress" ) )
@@ -113,7 +128,7 @@ int main( int argc, char* argv[] )
 
                 ray r = camera.generate( u, v );
 
-                c += pixel_color( intersector_collection, r );
+                c += ray_color( intersector_collection, random_generator, r, bounces );
             }
 
             write_color( std::cout, c, spp );

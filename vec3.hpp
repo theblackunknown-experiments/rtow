@@ -125,6 +125,31 @@ inline vec3 normalize( const vec3& v )
     return v / length( v );
 }
 
+template <typename Generator>
+vec3 random_vec3( Generator&& gen )
+{
+    std::uniform_real_distribution<float> distribution;
+    return { distribution( gen ), distribution( gen ), distribution( gen ) };
+}
+
+template <typename Generator>
+vec3 random_vec3( Generator&& gen, float a, float b )
+{
+    std::uniform_real_distribution<float> distribution( a, b );
+    return { distribution( gen ), distribution( gen ), distribution( gen ) };
+}
+
+template <typename Generator>
+vec3 random_vec3_unit_sphere( Generator&& gen )
+{
+    vec3 p;
+    do
+    {
+        p = random_vec3( gen, -1.f, +1.f );
+    } while ( length_squared( p ) >= 1.f );
+    return p;
+}
+
 inline std::ostream& operator<<( std::ostream& os, const vec3& v )
 {
     return os << v.x() << ' ' << v.y() << ' ' << v.z();
