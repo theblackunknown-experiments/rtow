@@ -57,7 +57,9 @@ target_precompile_headers(rtow
         <cmath>
         <cstring>
 
+        <memory>
         <utility>
+
         <vector>
 )
 

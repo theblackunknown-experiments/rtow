@@ -8,6 +8,7 @@
 
 #include <charconv>
 #include <iostream>
+#include <memory>
 
 #include <cstring>
 
@@ -79,6 +80,7 @@ int main( int argc, char* argv[] )
 
     intersection_table_collection intersector_collection;
     intersector_collection.emplace( intersection_table_sphere { { 0.f, 0.f, -1.f }, 0.5f } );
+    intersector_collection.emplace( intersection_table_sphere { { 0.f, -100.5f, -1.f }, 100.f } );
 
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
 
@@ -100,4 +102,9 @@ int main( int argc, char* argv[] )
             write_color( std::cout, c );
         }
     }
+
+    if ( progress )
+        std::cerr << std::endl;
+
+    std::cerr << "Done." << std::endl;
 }
