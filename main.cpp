@@ -4,6 +4,7 @@
 #include "./ray.hpp"
 #include "./intersection_record.hpp"
 #include "./intersection_table_sphere.hpp"
+#include "./intersection_table_collection.hpp"
 
 #include <charconv>
 #include <iostream>
@@ -12,16 +13,13 @@
 
 namespace rtow {
 
-constexpr intersection_table_sphere kSphere { { 0.f, 0.f, -1.f }, 0.5f };
-constexpr float                     kNear = 1e-3f;
-constexpr float                     kFar  = 1e3f;
+constexpr float kNear = 1e-3f;
+constexpr float kFar  = 1e3f;
 
-color pixel_color( const ray& r )
+color pixel_color( const intersection_table& intersector, const ray& r )
 {
-    constexpr vec3 kSphereCenter { 0.f, 0.f, -1.f };
-
     intersection_record record;
-    if ( kSphere.intersect( r, kNear, kFar, record ) )
+    if ( intersector.intersect( r, kNear, kFar, record ) )
     {
         return record.front_face ? 0.5f * color { record.normal + 1.f } : color { 0.f, 0.f, 0.f };
     }
@@ -79,6 +77,9 @@ int main( int argc, char* argv[] )
 
     std::ios::sync_with_stdio( false );
 
+    intersection_table_collection intersector_collection;
+    intersector_collection.emplace( intersection_table_sphere { { 0.f, 0.f, -1.f }, 0.5f } );
+
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
 
     std::cout << "P3\n" << width << ' ' << height << "\n255\n";
@@ -94,7 +95,7 @@ int main( int argc, char* argv[] )
 
             ray r { origin, lower_left + u * right + v * up - origin };
 
-            color c = pixel_color( r );
+            color c = pixel_color( intersector_collection, r );
 
             write_color( std::cout, c );
         }
