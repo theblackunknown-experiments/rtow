@@ -150,6 +150,12 @@ vec3 random_vec3_unit_sphere( Generator&& gen )
     return p;
 }
 
+template <typename Generator>
+vec3 random_vec3_unit_vector( Generator&& gen )
+{
+    return normalize( random_vec3_unit_sphere( gen ) );
+}
+
 inline std::ostream& operator<<( std::ostream& os, const vec3& v )
 {
     return os << v.x() << ' ' << v.y() << ' ' << v.z();

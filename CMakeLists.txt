@@ -61,6 +61,7 @@ target_precompile_headers(rtow
         <cmath>
         <cstring>
 
+        <limits>
         <memory>
         <random>
         <utility>

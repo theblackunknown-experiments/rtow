@@ -12,6 +12,7 @@
 #include <charconv>
 #include <iostream>
 
+#include <limits>
 #include <memory>
 #include <random>
 
@@ -20,7 +21,7 @@
 namespace rtow {
 
 constexpr float kNear = 1e-3f;
-constexpr float kFar  = 1e3f;
+constexpr float kFar  = std::numeric_limits<float>::infinity();
 
 template <typename Generator>
 color ray_color( const intersection_table& intersector, Generator&& gen, const ray& r, int bounces )
@@ -32,7 +33,7 @@ color ray_color( const intersection_table& intersector, Generator&& gen, const r
     intersection_record record;
     if ( intersector.intersect( r, kNear, kFar, record ) )
     {
-        vec3 target = record.point + record.normal + random_vec3_unit_sphere( gen );
+        vec3 target = record.point + record.normal + random_vec3_unit_vector( gen );
         // return record.front_face ? 0.5f * color { record.normal + 1.f } : color { 0.f, 0.f, 0.f };
         return 0.5 * ray_color( intersector, gen, ray { record.point, target - record.point }, bounces - 1 );
     }
