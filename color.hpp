@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+namespace rtow {
 using color = vec3;
 
 inline void write_color( std::ostream& os, const color& v )
@@ -14,3 +15,4 @@ inline void write_color( std::ostream& os, const color& v )
        << static_cast<int>( 255.99 * v.z() ) << '\n';
     // clang-format on
 }
+}  // namespace rtow

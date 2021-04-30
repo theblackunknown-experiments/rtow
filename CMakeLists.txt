@@ -38,9 +38,11 @@ target_sources(rtow
     PRIVATE
         main.cpp
 
-        vec3.hpp
         color.hpp
+        intersection.hpp
+        math.hpp
         ray.hpp
+        vec3.hpp
 )
 
 target_precompile_headers(rtow

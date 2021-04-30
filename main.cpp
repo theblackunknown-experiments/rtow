@@ -9,21 +9,31 @@
 
 #include <cstring>
 
+namespace rtow {
 color pixel_color( const ray& r )
 {
-    if ( intersect_sphere( { 0.f, 0.f, -1.f }, 0.5f, r ) )
-        return { 1.f, 0.f, 0.f };
+    constexpr vec3 kSphereCenter { 0.f, 0.f, -1.f };
 
-    constexpr color a { .5f, .7f, 1.f };
-    constexpr color b { 1.f, 1.f, 1.f };
+    auto t = intersect_sphere( kSphereCenter, 0.5f, r );
+    if ( t > 0.f )
+    {
+        vec3 N = normalize( r.at( t ) - kSphereCenter );
+        return 0.5f * color { N + 1.f };
+    }
+
+    constexpr color a { 1.f, 1.f, 1.f };
+    constexpr color b { .5f, .7f, 1.f };
 
     vec3 unit = normalize( r.direction );
-    auto t    = 0.5 * ( unit.y() + 1.f );
+
+    t = 0.5 * ( unit.y() + 1.f );
     return a + t * ( b - a );
 }
+}  // namespace rtow
 
 int main( int argc, char* argv[] )
 {
+    using namespace rtow;
     int   height       = 480;
     float aspect_ratio = 4.f / 3.f;
 
@@ -63,8 +73,9 @@ int main( int argc, char* argv[] )
 
     std::cout << "P3\n" << width << ' ' << height << "\n255\n";
 
-    for ( int j = 0; j < height; ++j )
+    for ( int j = height - 1; j >= 0; --j )
     {
+        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for ( int i = 0; i < width; ++i )
         {
             auto u = float( i ) / ( width - 1 );

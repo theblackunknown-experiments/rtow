@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+namespace rtow {
 struct vec3
 {
     float e[3];
@@ -72,6 +73,16 @@ inline vec3 operator+( const vec3& lhs, const vec3& rhs )
     return { lhs.x() + rhs.x(), lhs.y() + rhs.y(), lhs.z() + rhs.z() };
 }
 
+inline vec3 operator+( const vec3& lhs, float rhs )
+{
+    return { lhs.x() + rhs, lhs.y() + rhs, lhs.z() + rhs };
+}
+
+inline vec3 operator+( float lhs, const vec3& rhs )
+{
+    return rhs + lhs;
+}
+
 inline vec3 operator-( const vec3& lhs, const vec3& rhs )
 {
     return { lhs.x() - rhs.x(), lhs.y() - rhs.y(), lhs.z() - rhs.z() };
@@ -118,3 +129,4 @@ inline std::ostream& operator<<( std::ostream& os, const vec3& v )
 {
     return os << v.x() << ' ' << v.y() << ' ' << v.z();
 }
+}  // namespace rtow

@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+namespace rtow {
 struct ray
 {
     point origin;
@@ -14,3 +15,4 @@ struct ray
         return origin + t * direction;
     }
 };
+}  // namespace rtow
