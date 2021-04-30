@@ -15,19 +15,19 @@ constexpr float kNoHit = -1.f;
 // t^2b⋅b+2tb⋅(A−C)+(A−C)⋅(A−C)−r^2=0
 inline float intersect_sphere( const point& center, float radius, const ray& r )
 {
-    vec3 oc = r.origin - center;
-    auto a  = dot( r.direction, r.direction );
-    auto b  = 2.0f * dot( oc, r.direction );
-    auto c  = dot( oc, oc ) - radius * radius;
+    vec3 oc     = r.origin - center;
+    auto a      = length_squared( r.direction );  // equivalent to dot( r.direction, r.direction )
+    auto half_b = dot( oc, r.direction );
+    auto c      = length_squared( oc ) - radius * radius;  // equivalent to dot( oc, oc );
 
-    auto discriminant = b * b - 4 * a * c;
+    auto discriminant = half_b * half_b - a * c;
     if ( discriminant < 0 )
     {
         return kNoHit;
     }
     else
     {
-        return ( -b - sqrt( discriminant ) ) / ( 2.f * a );
+        return ( -half_b - sqrt( discriminant ) ) / a;
     }
 }
 }  // namespace rtow
