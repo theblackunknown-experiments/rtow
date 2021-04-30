@@ -16,9 +16,10 @@ inline void write_color( std::ostream& os, const color& v, int spp )
 
     auto scale = 1.f / spp;
 
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    // Divide the color by the number of samples and gamma-correct for gamma=2.0.
+    r = sqrt( scale * r );
+    g = sqrt( scale * g );
+    b = sqrt( scale * b );
 
     // clang-format off
     os << static_cast<int>( 256 * clamp(r, 0.f, 0.999f ) ) << ' '
