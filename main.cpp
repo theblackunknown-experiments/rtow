@@ -2,7 +2,8 @@
 #include "./vec3.hpp"
 #include "./color.hpp"
 #include "./ray.hpp"
-#include "./intersection.hpp"
+#include "./intersection_record.hpp"
+#include "./intersection_table_sphere.hpp"
 
 #include <charconv>
 #include <iostream>
@@ -10,15 +11,19 @@
 #include <cstring>
 
 namespace rtow {
+
+constexpr intersection_table_sphere kSphere { { 0.f, 0.f, -1.f }, 0.5f };
+constexpr float                     kNear = 1e-3f;
+constexpr float                     kFar  = 1e3f;
+
 color pixel_color( const ray& r )
 {
     constexpr vec3 kSphereCenter { 0.f, 0.f, -1.f };
 
-    auto t = intersect_sphere( kSphereCenter, 0.5f, r );
-    if ( t > 0.f )
+    intersection_record record;
+    if ( kSphere.intersect( r, kNear, kFar, record ) )
     {
-        vec3 N = normalize( r.at( t ) - kSphereCenter );
-        return 0.5f * color { N + 1.f };
+        return 0.5f * color { record.normal + 1.f };
     }
 
     constexpr color a { 1.f, 1.f, 1.f };
@@ -26,7 +31,7 @@ color pixel_color( const ray& r )
 
     vec3 unit = normalize( r.direction );
 
-    t = 0.5 * ( unit.y() + 1.f );
+    auto t = 0.5 * ( unit.y() + 1.f );
     return a + t * ( b - a );
 }
 }  // namespace rtow
@@ -34,6 +39,7 @@ color pixel_color( const ray& r )
 int main( int argc, char* argv[] )
 {
     using namespace rtow;
+    bool  progress     = false;
     int   height       = 480;
     float aspect_ratio = 4.f / 3.f;
 
@@ -52,6 +58,10 @@ int main( int argc, char* argv[] )
             const std::size_t size = std::strlen( arg );
             std::from_chars( arg, arg + size, aspect_ratio );
             ++i;
+        }
+        else if ( strstr( argv[i], "--progress" ) )
+        {
+            progress = true;
         }
     }
 
@@ -75,7 +85,8 @@ int main( int argc, char* argv[] )
 
     for ( int j = height - 1; j >= 0; --j )
     {
-        std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
+        if ( progress )
+            std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for ( int i = 0; i < width; ++i )
         {
             auto u = float( i ) / ( width - 1 );

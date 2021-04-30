@@ -39,7 +39,9 @@ target_sources(rtow
         main.cpp
 
         color.hpp
-        intersection.hpp
+        intersection_record.hpp
+        intersection_table.hpp
+        intersection_table_sphere.hpp
         math.hpp
         ray.hpp
         vec3.hpp
