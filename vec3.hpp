@@ -140,7 +140,7 @@ vec3 random_vec3( Generator&& gen, float a, float b )
 }
 
 template <typename Generator>
-vec3 random_vec3_unit_sphere( Generator&& gen )
+vec3 random_vec3_in_unit_sphere( Generator&& gen )
 {
     vec3 p;
     do
@@ -153,7 +153,17 @@ vec3 random_vec3_unit_sphere( Generator&& gen )
 template <typename Generator>
 vec3 random_vec3_unit_vector( Generator&& gen )
 {
-    return normalize( random_vec3_unit_sphere( gen ) );
+    return normalize( random_vec3_in_unit_sphere( gen ) );
+}
+
+template <typename Generator>
+vec3 random_vec3_in_hemisphere( Generator&& gen, const vec3& normal )
+{
+    auto in_unit_sphere = random_vec3_in_unit_sphere( gen );
+    if ( dot( in_unit_sphere, normal ) > 0.f )
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
 }
 
 inline std::ostream& operator<<( std::ostream& os, const vec3& v )

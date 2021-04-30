@@ -33,7 +33,8 @@ color ray_color( const intersection_table& intersector, Generator&& gen, const r
     intersection_record record;
     if ( intersector.intersect( r, kNear, kFar, record ) )
     {
-        vec3 target = record.point + record.normal + random_vec3_unit_vector( gen );
+        // vec3 target = record.point + record.normal + random_vec3_unit_vector( gen );
+        vec3 target = record.point + random_vec3_in_hemisphere( gen, record.normal );
         // return record.front_face ? 0.5f * color { record.normal + 1.f } : color { 0.f, 0.f, 0.f };
         return 0.5 * ray_color( intersector, gen, ray { record.point, target - record.point }, bounces - 1 );
     }
