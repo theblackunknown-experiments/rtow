@@ -54,9 +54,9 @@ inline bool intersection_table_sphere::intersect( const ray& r, float tmin, floa
             return false;
     }
 
-    record.t      = root;
-    record.point  = r.at( root );
-    record.normal = ( record.point - center ) / radius;
+    record.t     = root;
+    record.point = r.at( root );
+    record.update_normal( r, ( record.point - center ) / radius );
     return true;
 }
 }  // namespace rtow

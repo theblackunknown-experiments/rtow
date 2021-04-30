@@ -23,7 +23,7 @@ color pixel_color( const ray& r )
     intersection_record record;
     if ( kSphere.intersect( r, kNear, kFar, record ) )
     {
-        return 0.5f * color { record.normal + 1.f };
+        return record.front_face ? 0.5f * color { record.normal + 1.f } : color { 0.f, 0.f, 0.f };
     }
 
     constexpr color a { 1.f, 1.f, 1.f };
