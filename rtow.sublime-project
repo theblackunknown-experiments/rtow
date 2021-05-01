@@ -19,23 +19,6 @@
             "variants":
             [
                 {
-                    "shell_cmd": "Release\\rtow.exe -h 480 -as 1.33 > 640x480.ppm",
-                    "name": "rtow (Release) - 480p 4/3"
-                },
-                {
-                    "shell_cmd": "Release\\rtow.exe -h 1080 -as 1.78 > 1280x1080.ppm",
-                    "name": "rtow (Release) - 1080p 16/9"
-                },
-                {
-                    "cmd":
-                    [
-                        "rm",
-                        "-rf",
-                        "*"
-                    ],
-                    "name": "Delete"
-                },
-                {
                     "cmd":
                     [
                         "cmake",
@@ -121,6 +104,23 @@
                         "rtow"
                     ],
                     "name": "rtow (Release)"
+                },
+                {
+                    "shell_cmd": "Release\\rtow.exe -h 480 -as 1.33 > 640x480.ppm",
+                    "name": "rtow (Release) - 480p 4/3"
+                },
+                {
+                    "shell_cmd": "Release\\rtow.exe -h 1080 -as 1.78 > 1280x1080.ppm",
+                    "name": "rtow (Release) - 1080p 16/9"
+                },
+                {
+                    "cmd":
+                    [
+                        "rm",
+                        "-rf",
+                        "*"
+                    ],
+                    "name": "Delete"
                 }
             ],
             "working_dir": "C:/builds/rtow"

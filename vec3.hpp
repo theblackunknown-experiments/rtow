@@ -133,6 +133,13 @@ inline vec3 reflect( const vec3& v, const vec3& n )
 {
     return v - 2 * dot( v, n ) * n;
 }
+
+inline vec3 refract( const vec3& r_in, const vec3& n, float etai_over_etat, float cos_theta )
+{
+    vec3 r_out_perp = etai_over_etat * ( r_in + cos_theta * n );
+    vec3 r_out_para = -sqrt( abs( 1.f - length_squared( r_out_perp ) ) ) * n;
+    return r_out_perp + r_out_para;
+}
 }  // namespace rtow
 
 #include <iostream>

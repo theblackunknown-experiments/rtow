@@ -49,6 +49,7 @@ target_sources(rtow
         camera.hpp
 
         material.hpp
+        material_dielectric.hpp
         material_lambertian.hpp
         material_metal.hpp
 

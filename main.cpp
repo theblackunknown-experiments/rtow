@@ -11,8 +11,9 @@
 #include "./intersection_table_sphere.hpp"
 #include "./intersection_table_collection.hpp"
 
-#include "./material_metal.hpp"
+#include "./material_dielectric.hpp"
 #include "./material_lambertian.hpp"
+#include "./material_metal.hpp"
 
 #include <charconv>
 #include <iostream>
@@ -62,8 +63,8 @@ int main( int argc, char* argv[] )
     bool  progress     = false;
     int   height       = 480;
     float aspect_ratio = 4.f / 3.f;
-    int   spp          = 50;
-    int   bounces      = 10;
+    int   spp          = 100;
+    int   bounces      = 50;
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -114,16 +115,17 @@ int main( int argc, char* argv[] )
     basic_random_generator                random_generator;
     std::uniform_real_distribution<float> jitter( 0.f, 1.f );
 
-    material_metal      material_left( color { 0.8f, 0.8f, 0.8f }, 0.3f );
-    material_metal      material_right( color { 0.8f, 0.6f, 0.2f }, 1.0f );
+    material_metal      material_metal_left( color { 0.8f, 0.8f, 0.8f }, 0.3f );
+    material_metal      material_metal_right( color { 0.8f, 0.6f, 0.2f }, 1.0f );
+    material_dielectric material_glass( 1.5f );
     material_lambertian material_ground( color { 0.8f, 0.8f, 0.0f } );
     material_lambertian material_center( color { 0.7f, 0.3f, 0.3f } );
 
     intersection_table_collection intersector_collection;
     intersector_collection.emplace<intersection_table_sphere>( point { 0.f, -100.5f, -1.f }, 100.f, &material_ground );
     intersector_collection.emplace<intersection_table_sphere>( point { 0.f, 0.f, -1.f }, 0.5f, &material_center );
-    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, 0.5f, &material_left );
-    intersector_collection.emplace<intersection_table_sphere>( point { 1.f, 0.f, -1.f }, 0.5f, &material_right );
+    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, 0.5f, &material_glass );
+    intersector_collection.emplace<intersection_table_sphere>( point { 1.f, 0.f, -1.f }, 0.5f, &material_metal_right );
 
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
 
