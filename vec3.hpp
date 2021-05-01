@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cmath>
-
-#include <iostream>
+#include "./math.hpp"
 
 namespace rtow {
 struct vec3
@@ -65,7 +63,7 @@ inline float length_squared( const vec3& v )
 
 inline float length( const vec3& v )
 {
-    return std::sqrt( length_squared( v ) );
+    return sqrt( length_squared( v ) );
 }
 
 inline vec3 operator+( const vec3& lhs, const vec3& rhs )
@@ -125,47 +123,16 @@ inline vec3 normalize( const vec3& v )
     return v / length( v );
 }
 
-template <typename Generator>
-vec3 random_vec3( Generator&& gen )
+inline bool near_zero( const vec3& v )
 {
-    std::uniform_real_distribution<float> distribution;
-    return { distribution( gen ), distribution( gen ), distribution( gen ) };
+    constexpr float kEpsilon = 1e-8f;
+    return ( fabs( v.x() ) < kEpsilon ) && ( fabs( v.y() ) < kEpsilon ) && ( fabs( v.z() ) < kEpsilon );
 }
+}  // namespace rtow
 
-template <typename Generator>
-vec3 random_vec3( Generator&& gen, float a, float b )
-{
-    std::uniform_real_distribution<float> distribution( a, b );
-    return { distribution( gen ), distribution( gen ), distribution( gen ) };
-}
+#include <iostream>
 
-template <typename Generator>
-vec3 random_vec3_in_unit_sphere( Generator&& gen )
-{
-    vec3 p;
-    do
-    {
-        p = random_vec3( gen, -1.f, +1.f );
-    } while ( length_squared( p ) >= 1.f );
-    return p;
-}
-
-template <typename Generator>
-vec3 random_vec3_unit_vector( Generator&& gen )
-{
-    return normalize( random_vec3_in_unit_sphere( gen ) );
-}
-
-template <typename Generator>
-vec3 random_vec3_in_hemisphere( Generator&& gen, const vec3& normal )
-{
-    auto in_unit_sphere = random_vec3_in_unit_sphere( gen );
-    if ( dot( in_unit_sphere, normal ) > 0.f )
-        return in_unit_sphere;
-    else
-        return -in_unit_sphere;
-}
-
+namespace rtow {
 inline std::ostream& operator<<( std::ostream& os, const vec3& v )
 {
     return os << v.x() << ' ' << v.y() << ' ' << v.z();

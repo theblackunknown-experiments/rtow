@@ -44,7 +44,12 @@ target_sources(rtow
         vec3.hpp
         color.hpp
 
+        random.hpp
+
         camera.hpp
+
+        material.hpp
+        material_lambertian.hpp
 
         intersection_record.hpp
         intersection_table.hpp

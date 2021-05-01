@@ -7,15 +7,17 @@
 namespace rtow {
 struct ray;
 struct intersection_record;
+class material;
 
 class intersection_table_sphere: public intersection_table
 {
 private:
-    point center;
-    float radius;
+    point     center;
+    float     radius;
+    material* mat;
 
 public:
-    constexpr intersection_table_sphere( const point& p, float r ): center( p ), radius( r )
+    intersection_table_sphere( const point& p, float r, material* m ): center( p ), radius( r ), mat( m )
     {
     }
     bool intersect( const ray& ray, float tmin, float tmax, intersection_record& record ) const override;
@@ -54,8 +56,9 @@ inline bool intersection_table_sphere::intersect( const ray& r, float tmin, floa
             return false;
     }
 
-    record.t     = root;
-    record.point = r.at( root );
+    record.t        = root;
+    record.point    = r.at( root );
+    record.material = mat;
     record.update_normal( r, ( record.point - center ) / radius );
     return true;
 }

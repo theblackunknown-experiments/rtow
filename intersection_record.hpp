@@ -4,12 +4,16 @@
 #include "./vec3.hpp"
 
 namespace rtow {
+
+class material;
+
 struct intersection_record
 {
-    point point;
-    vec3  normal;
-    float t;
-    bool  front_face;
+    point     point;
+    vec3      normal;
+    float     t;
+    bool      front_face;
+    material* material;
 
     void update_normal( const ray& r, const vec3& outward_normal )
     {
