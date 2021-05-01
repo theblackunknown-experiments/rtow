@@ -11,6 +11,7 @@
 #include "./intersection_table_sphere.hpp"
 #include "./intersection_table_collection.hpp"
 
+#include "./material_metal.hpp"
 #include "./material_lambertian.hpp"
 
 #include <charconv>
@@ -113,11 +114,16 @@ int main( int argc, char* argv[] )
     basic_random_generator                random_generator;
     std::uniform_real_distribution<float> jitter( 0.f, 1.f );
 
-    material_lambertian lambertian( color { 0.5f, 0.5f, 0.5f } );
+    material_metal      material_left( color { 0.8f, 0.8f, 0.8f } );
+    material_metal      material_right( color { 0.8f, 0.6f, 0.2f } );
+    material_lambertian material_ground( color { 0.8f, 0.8f, 0.0f } );
+    material_lambertian material_center( color { 0.7f, 0.3f, 0.3f } );
 
     intersection_table_collection intersector_collection;
-    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, 0.f, -1.f }, 0.5f, &lambertian );
-    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, -100.5f, -1.f }, 100.f, &lambertian );
+    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, -100.5f, -1.f }, 100.f, &material_ground );
+    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, 0.f, -1.f }, 0.5f, &material_center );
+    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, 0.5f, &material_left );
+    intersector_collection.emplace<intersection_table_sphere>( point { 1.f, 0.f, -1.f }, 0.5f, &material_right );
 
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
 

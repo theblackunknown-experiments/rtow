@@ -50,6 +50,7 @@ target_sources(rtow
 
         material.hpp
         material_lambertian.hpp
+        material_metal.hpp
 
         intersection_record.hpp
         intersection_table.hpp
