@@ -63,8 +63,9 @@ int main( int argc, char* argv[] )
     bool  progress     = false;
     int   height       = 480;
     float aspect_ratio = 4.f / 3.f;
-    int   spp          = 100;
-    int   bounces      = 50;
+    int   spp          = 6;
+    int   bounces      = 25;
+    float vfov         = 25.f;
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -100,14 +101,24 @@ int main( int argc, char* argv[] )
         {
             progress = true;
         }
+        else if ( strstr( argv[i], "-vfov" ) || strstr( argv[i], "--vertical-field-of-view" ) )
+        {
+            const char*       arg  = argv[i + 1];
+            const std::size_t size = std::strlen( arg );
+            std::from_chars( arg, arg + size, vfov );
+            ++i;
+        }
     }
 
     int width = static_cast<int>( aspect_ratio * height );
 
-    auto camera = create_camera( simple_camera_parameters {
-        .aspect_ratio    = aspect_ratio,
-        .viewport_height = 2.f,
-        .focal_length    = 1.f,
+    auto camera = create_camera( fov_camera_parameters {
+        .lookfrom = point { -2.f, 2.f, 1.f },
+        .lookat   = point { 0.f, 0.f, -1.f },
+        .vup      = vec3 { 0.f, 1.f, 0.f },
+
+        .vertical_fov = vfov,
+        .aspect_ratio = aspect_ratio,
     } );
 
     std::ios::sync_with_stdio( false );
@@ -115,18 +126,17 @@ int main( int argc, char* argv[] )
     basic_random_generator                random_generator;
     std::uniform_real_distribution<float> jitter( 0.f, 1.f );
 
-    material_metal      material_metal_left( color { 0.8f, 0.8f, 0.8f }, 0.3f );
-    material_metal      material_metal_right( color { 0.8f, 0.6f, 0.2f }, 1.0f );
-    material_dielectric material_glass( 1.5f );
     material_lambertian material_ground( color { 0.8f, 0.8f, 0.0f } );
-    material_lambertian material_center( color { 0.7f, 0.3f, 0.3f } );
+    material_lambertian material_center( color { 0.1f, 0.2f, 0.5f } );
+    material_dielectric material_left( 1.5f );
+    material_metal      material_right( color { 0.8f, 0.6f, 0.2f }, 0.0f );
 
     intersection_table_collection intersector_collection;
     intersector_collection.emplace<intersection_table_sphere>( point { 0.f, -100.5f, -1.f }, 100.f, &material_ground );
     intersector_collection.emplace<intersection_table_sphere>( point { 0.f, 0.f, -1.f }, 0.5f, &material_center );
-    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, 0.5f, &material_glass );
-    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, -0.4f, &material_glass );
-    intersector_collection.emplace<intersection_table_sphere>( point { 1.f, 0.f, -1.f }, 0.5f, &material_metal_right );
+    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, 0.5f, &material_left );
+    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, -0.45f, &material_left );
+    intersector_collection.emplace<intersection_table_sphere>( point { 1.f, 0.f, -1.f }, 0.5f, &material_right );
 
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
 

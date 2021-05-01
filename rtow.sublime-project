@@ -13,7 +13,7 @@
                 "CLICOLOR_FORCE": "1"
             },
             "file_regex": "^[ ]*(.+?)\\(([0-9]+)\\)[ ]*: (.*)$",
-            "name": "vkplaygrounds (MSVC)",
+            "name": "rtow (MSVC)",
             "syntax": "Packages/ANSIescape/ANSI.sublime-syntax",
             "target": "ansi_color_build",
             "variants":
@@ -106,14 +106,6 @@
                     "name": "rtow (Release)"
                 },
                 {
-                    "shell_cmd": "Release\\rtow.exe -h 480 -as 1.33 > 640x480.ppm",
-                    "name": "rtow (Release) - 480p 4/3"
-                },
-                {
-                    "shell_cmd": "Release\\rtow.exe -h 1080 -as 1.78 > 1280x1080.ppm",
-                    "name": "rtow (Release) - 1080p 16/9"
-                },
-                {
                     "cmd":
                     [
                         "rm",
@@ -121,6 +113,22 @@
                         "*"
                     ],
                     "name": "Delete"
+                }
+            ],
+            "working_dir": "C:/builds/rtow"
+        },
+        {
+            "shell_cmd": "Release\\rtow.exe > image.ppm",
+            "name": "rtow (Release)",
+            "variants":
+            [
+                {
+                    "shell_cmd": "Release\\rtow.exe -h 480 -as 1.33 > 640x480.ppm",
+                    "name": "rtow (Release) - 480p 4/3"
+                },
+                {
+                    "shell_cmd": "Release\\rtow.exe -h 1080 -as 1.78 > 1280x1080.ppm",
+                    "name": "rtow (Release) - 1080p 16/9"
                 }
             ],
             "working_dir": "C:/builds/rtow"

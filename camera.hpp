@@ -39,4 +39,34 @@ inline camera create_camera( const simple_camera_parameters& p )
                     .up         = up,
                     .lower_left = origin - right / 2.f - up / 2.f - vec3 { 0.f, 0.f, p.focal_length } };
 }
+
+struct fov_camera_parameters
+{
+    point lookfrom;
+    point lookat;
+    vec3  vup;
+
+    float vertical_fov;
+    float aspect_ratio = 16.f / 9.f;
+};
+
+inline camera create_camera( const fov_camera_parameters& p )
+{
+    auto theta = degrees_to_radians( p.vertical_fov );
+    auto h     = tan( theta / 2.f );
+
+    auto viewport_height = 2.f * h;
+    auto viewport_width  = p.aspect_ratio * viewport_height;
+
+    auto w = normalize( p.lookfrom - p.lookat );
+    auto u = normalize( cross( p.vup, w ) );
+    auto v = cross( w, u );
+
+    auto origin            = p.lookfrom;
+    auto horizontal        = viewport_width * u;
+    auto vertical          = viewport_height * v;
+    auto lower_left_corner = origin - horizontal / 2.f - vertical / 2.f - w;
+
+    return camera { .origin = origin, .right = horizontal, .up = vertical, .lower_left = lower_left_corner };
+}
 }  // namespace rtow

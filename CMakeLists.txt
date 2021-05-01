@@ -82,6 +82,7 @@ target_compile_definitions(rtow
             NOMINMAX
             WIN32_LEAN_AND_MEAN
         >
+        _USE_MATH_DEFINES
 )
 
 ##############################
