@@ -125,6 +125,7 @@ int main( int argc, char* argv[] )
     intersector_collection.emplace<intersection_table_sphere>( point { 0.f, -100.5f, -1.f }, 100.f, &material_ground );
     intersector_collection.emplace<intersection_table_sphere>( point { 0.f, 0.f, -1.f }, 0.5f, &material_center );
     intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, 0.5f, &material_glass );
+    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, -0.4f, &material_glass );
     intersector_collection.emplace<intersection_table_sphere>( point { 1.f, 0.f, -1.f }, 0.5f, &material_metal_right );
 
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;

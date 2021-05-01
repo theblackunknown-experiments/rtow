@@ -8,6 +8,11 @@ inline float sqrt( float v )
     return std::sqrt( v );
 }
 
+inline float pow( float b, float e )
+{
+    return std::pow( b, e );
+}
+
 inline float abs( float a )
 {
     return a < 0.f ? -a : a;

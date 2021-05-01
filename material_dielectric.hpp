@@ -45,7 +45,9 @@ bool material_dielectric::scatter(
     auto cos_theta      = min( dot( -unit_direction, record.normal ), 1.f );
     auto sin_theta      = sqrt( 1.f - cos_theta * cos_theta );
 
-    if ( ratio * sin_theta > 1.f )
+    std::uniform_real_distribution<float> distribution;
+
+    if ( ( ratio * sin_theta > 1.f ) || reflectance( cos_theta, ratio ) > distribution( generator.device ) )
     {
         auto scattered = reflect( unit_direction, record.normal );
         r_out          = ray { record.point, scattered };

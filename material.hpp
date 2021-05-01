@@ -19,5 +19,17 @@ public:
         color&                     attenuation,
         ray&                       r_out ) const = 0;
 };
+}  // namespace rtow
+
+#include "./math.hpp"
+
+namespace rtow {
+inline float reflectance( float cos_theta, float etai_over_etat )
+{
+    // Schlick
+    auto r0 = ( 1.f - etai_over_etat ) / ( 1.f + etai_over_etat );
+    r0 *= r0;
+    return r0 + ( 1.f - r0 ) * pow( 1.f - cos_theta, 5.f );
+}
 
 }  // namespace rtow
