@@ -114,8 +114,8 @@ int main( int argc, char* argv[] )
     basic_random_generator                random_generator;
     std::uniform_real_distribution<float> jitter( 0.f, 1.f );
 
-    material_metal      material_left( color { 0.8f, 0.8f, 0.8f } );
-    material_metal      material_right( color { 0.8f, 0.6f, 0.2f } );
+    material_metal      material_left( color { 0.8f, 0.8f, 0.8f }, 0.3f );
+    material_metal      material_right( color { 0.8f, 0.6f, 0.2f }, 1.0f );
     material_lambertian material_ground( color { 0.8f, 0.8f, 0.0f } );
     material_lambertian material_center( color { 0.7f, 0.3f, 0.3f } );
 

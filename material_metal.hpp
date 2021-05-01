@@ -8,9 +8,10 @@ class material_metal: public material
 {
 private:
     color albedo;
+    float fuzz;
 
 public:
-    material_metal( const color& a ): albedo( a )
+    material_metal( const color& a, float f ): albedo( a ), fuzz( f )
     {
     }
     bool scatter(
@@ -36,7 +37,7 @@ bool material_metal::scatter(
     ray&                       r_out ) const
 {
     auto scattered = reflect( normalize( r_in.direction ), record.normal );
-    r_out          = ray { record.point, scattered };
+    r_out          = ray { record.point, scattered + fuzz * random_vec3_in_unit_sphere( generator ) };
     attenuation    = albedo;
     return dot( scattered, record.normal ) > 0.f;
 }
