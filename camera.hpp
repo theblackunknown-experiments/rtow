@@ -2,6 +2,7 @@
 
 #include "./vec3.hpp"
 #include "./ray.hpp"
+#include "./random.hpp"
 
 namespace rtow {
 struct camera
@@ -10,35 +11,19 @@ struct camera
     vec3  right;
     vec3  up;
     point lower_left;
+    float lens_radius;
 
-    ray generate( float u, float v ) const
+    ray generate( basic_random_generator& gen, float u, float v ) const
     {
+        vec3 lens_origin_delta = lens_radius * random_vec3_in_unit_disk( gen );
+        vec3 offset            = right * lens_origin_delta.x() + up * lens_origin_delta.y();
+
         return ray {
-            .origin    = origin,
-            .direction = lower_left + u * right + v * up - origin,
+            .origin    = origin + offset,
+            .direction = lower_left + u * right + v * up - origin - offset,
         };
     }
 };
-
-struct simple_camera_parameters
-{
-    float aspect_ratio    = 16.f / 9.f;
-    float viewport_height = 2.f;
-    float focal_length    = 1.f;
-};
-
-inline camera create_camera( const simple_camera_parameters& p )
-{
-    auto viewport_width = p.aspect_ratio * p.viewport_height;
-
-    vec3 origin { 0.f, 0.f, 0.f };
-    vec3 right { viewport_width, 0.f, 0.f };
-    vec3 up { 0.f, p.viewport_height, 0.f };
-    return camera { .origin     = origin,
-                    .right      = right,
-                    .up         = up,
-                    .lower_left = origin - right / 2.f - up / 2.f - vec3 { 0.f, 0.f, p.focal_length } };
-}
 
 struct fov_camera_parameters
 {
@@ -48,6 +33,8 @@ struct fov_camera_parameters
 
     float vertical_fov;
     float aspect_ratio = 16.f / 9.f;
+    float aperture;
+    float focus_distance;
 };
 
 inline camera create_camera( const fov_camera_parameters& p )
@@ -63,10 +50,14 @@ inline camera create_camera( const fov_camera_parameters& p )
     auto v = cross( w, u );
 
     auto origin            = p.lookfrom;
-    auto horizontal        = viewport_width * u;
-    auto vertical          = viewport_height * v;
-    auto lower_left_corner = origin - horizontal / 2.f - vertical / 2.f - w;
+    auto horizontal        = p.focus_distance * viewport_width * u;
+    auto vertical          = p.focus_distance * viewport_height * v;
+    auto lower_left_corner = origin - horizontal / 2.f - vertical / 2.f - p.focus_distance * w;
 
-    return camera { .origin = origin, .right = horizontal, .up = vertical, .lower_left = lower_left_corner };
+    return camera { .origin      = origin,
+                    .right       = horizontal,
+                    .up          = vertical,
+                    .lower_left  = lower_left_corner,
+                    .lens_radius = p.aperture / 2.f };
 }
 }  // namespace rtow

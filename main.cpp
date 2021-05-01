@@ -112,13 +112,19 @@ int main( int argc, char* argv[] )
 
     int width = static_cast<int>( aspect_ratio * height );
 
+    constexpr point kLookFrom { 3.f, 3.f, 2.f };
+    constexpr point kLookAt { 0.f, 0.f, -1.f };
+
     auto camera = create_camera( fov_camera_parameters {
-        .lookfrom = point { -2.f, 2.f, 1.f },
-        .lookat   = point { 0.f, 0.f, -1.f },
+        .lookfrom = kLookFrom,
+        .lookat   = kLookAt,
         .vup      = vec3 { 0.f, 1.f, 0.f },
 
         .vertical_fov = vfov,
         .aspect_ratio = aspect_ratio,
+
+        .aperture       = 2.f,
+        .focus_distance = length( kLookFrom - kLookAt ),
     } );
 
     std::ios::sync_with_stdio( false );
@@ -154,7 +160,7 @@ int main( int argc, char* argv[] )
                 auto u = float( i + jitter( random_generator.device ) ) / ( width - 1 );
                 auto v = float( j + jitter( random_generator.device ) ) / ( height - 1 );
 
-                ray r = camera.generate( u, v );
+                ray r = camera.generate( random_generator, u, v );
 
                 c += ray_color( intersector_collection, random_generator, r, bounces );
             }

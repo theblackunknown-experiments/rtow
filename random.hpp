@@ -47,4 +47,16 @@ vec3 random_vec3_in_hemisphere( basic_random_generator& gen, const vec3& normal 
         return -in_unit_sphere;
 }
 
+vec3 random_vec3_in_unit_disk( basic_random_generator& gen )
+{
+    vec3 p;
+
+    std::uniform_real_distribution<float> distribution( -1.f, +1.f );
+    do
+    {
+        p = vec3 { distribution( gen.device ), distribution( gen.device ), 0.f };
+    } while ( length_squared( p ) >= 1.f );
+    return p;
+}
+
 }  // namespace rtow
