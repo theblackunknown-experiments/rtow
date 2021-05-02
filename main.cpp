@@ -22,6 +22,8 @@
 #include <memory>
 #include <random>
 
+#include <vector>
+
 #include <cstring>
 
 namespace rtow {
@@ -61,11 +63,11 @@ int main( int argc, char* argv[] )
     using namespace rtow;
 
     bool  progress     = false;
-    int   height       = 480;
-    float aspect_ratio = 4.f / 3.f;
-    int   spp          = 6;
-    int   bounces      = 25;
-    float vfov         = 25.f;
+    int   height       = 800;
+    float aspect_ratio = 3.f / 2.f;
+    int   spp          = 500;
+    int   bounces      = 50;
+    float vfov         = 20.f;
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -112,37 +114,72 @@ int main( int argc, char* argv[] )
 
     int width = static_cast<int>( aspect_ratio * height );
 
-    constexpr point kLookFrom { 3.f, 3.f, 2.f };
-    constexpr point kLookAt { 0.f, 0.f, -1.f };
-
     auto camera = create_camera( fov_camera_parameters {
-        .lookfrom = kLookFrom,
-        .lookat   = kLookAt,
+        .lookfrom = { 13.f, 2.f, 3.f },
+        .lookat   = { 0.f, 0.f, 0.f },
         .vup      = vec3 { 0.f, 1.f, 0.f },
 
         .vertical_fov = vfov,
         .aspect_ratio = aspect_ratio,
 
-        .aperture       = 2.f,
-        .focus_distance = length( kLookFrom - kLookAt ),
+        .aperture       = 0.1f,
+        .focus_distance = 10.f,
     } );
 
     std::ios::sync_with_stdio( false );
 
-    basic_random_generator                random_generator;
+    basic_random_generator                generator;
     std::uniform_real_distribution<float> jitter( 0.f, 1.f );
 
-    material_lambertian material_ground( color { 0.8f, 0.8f, 0.0f } );
-    material_lambertian material_center( color { 0.1f, 0.2f, 0.5f } );
-    material_dielectric material_left( 1.5f );
-    material_metal      material_right( color { 0.8f, 0.6f, 0.2f }, 0.0f );
+    material_lambertian material_ground( color { 0.5f, 0.5f, 0.5f } );
+    material_dielectric material_dielectric( 1.5f );
+    material_lambertian material_left( color { 0.4f, 0.2f, 0.1f } );
+    material_metal      material_right( color { 0.7f, 0.6f, 0.5f }, 0.f );
+
+    std::vector<material_metal>      metals;
+    std::vector<material_lambertian> lambertians;
+    metals.reserve( 11 * 11 * 11 * 11 );
+    lambertians.reserve( 11 * 11 * 11 * 11 );
 
     intersection_table_collection intersector_collection;
-    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, -100.5f, -1.f }, 100.f, &material_ground );
-    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, 0.f, -1.f }, 0.5f, &material_center );
-    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, 0.5f, &material_left );
-    intersector_collection.emplace<intersection_table_sphere>( point { -1.f, 0.f, -1.f }, -0.45f, &material_left );
-    intersector_collection.emplace<intersection_table_sphere>( point { 1.f, 0.f, -1.f }, 0.5f, &material_right );
+    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, -1000.f, 0.f }, 1000.f, &material_ground );
+
+    for ( int a = -11; a < 11; ++a )
+    {
+        for ( int b = -11; b < 11; ++b )
+        {
+            auto material_choice = random_float( generator );
+
+            vec3 center { a + 0.9f * random_float( generator ), 0.2f, b + 0.9f * random_float( generator ) };
+
+            if ( length( center - point { 4.f, 0.2f, 0.f } ) <= 0.9f )
+                continue;
+
+            if ( material_choice < 0.8f )
+            {
+                auto  albedo   = random_vec3( generator ) * random_vec3( generator );
+                auto& material = lambertians.emplace_back( albedo );
+                intersector_collection.emplace<intersection_table_sphere>( center, 0.2f, &material );
+            }
+            else if ( material_choice < 0.95f )
+            {
+                auto  albedo   = random_vec3( generator, 0.5f, 1.f );
+                auto  fuzz     = random_float( generator, 0.f, 0.5f );
+                auto& material = metals.emplace_back( albedo, fuzz );
+                intersector_collection.emplace<intersection_table_sphere>( center, 0.2f, &material );
+            }
+            else
+            {
+                auto albedo = random_vec3( generator, 0.5f, 1.f );
+                auto fuzz   = random_float( generator, 0.f, 0.5f );
+                intersector_collection.emplace<intersection_table_sphere>( center, 0.2f, &material_dielectric );
+            }
+        }
+    }
+
+    intersector_collection.emplace<intersection_table_sphere>( point { 0.f, 1.f, 0.f }, 1.0f, &material_dielectric );
+    intersector_collection.emplace<intersection_table_sphere>( point { -4.f, 1.f, 0.f }, 1.0f, &material_left );
+    intersector_collection.emplace<intersection_table_sphere>( point { +4.f, 1.f, 0.f }, 1.0f, &material_right );
 
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
 
@@ -157,12 +194,12 @@ int main( int argc, char* argv[] )
             color c { 0.f, 0.f, 0.f };
             for ( int s = 0; s < spp; ++s )
             {
-                auto u = float( i + jitter( random_generator.device ) ) / ( width - 1 );
-                auto v = float( j + jitter( random_generator.device ) ) / ( height - 1 );
+                auto u = float( i + jitter( generator.device ) ) / ( width - 1 );
+                auto v = float( j + jitter( generator.device ) ) / ( height - 1 );
 
-                ray r = camera.generate( random_generator, u, v );
+                ray r = camera.generate( generator, u, v );
 
-                c += ray_color( intersector_collection, random_generator, r, bounces );
+                c += ray_color( intersector_collection, generator, r, bounces );
             }
 
             write_color( std::cout, c, spp );

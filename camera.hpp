@@ -8,19 +8,20 @@ namespace rtow {
 struct camera
 {
     point origin;
-    vec3  right;
-    vec3  up;
+    vec3  u, v, w;
+    vec3  horizontal;
+    vec3  vertical;
     point lower_left;
     float lens_radius;
 
-    ray generate( basic_random_generator& gen, float u, float v ) const
+    ray generate( basic_random_generator& gen, float s, float t ) const
     {
         vec3 lens_origin_delta = lens_radius * random_vec3_in_unit_disk( gen );
-        vec3 offset            = right * lens_origin_delta.x() + up * lens_origin_delta.y();
+        vec3 offset            = u * lens_origin_delta.x() + v * lens_origin_delta.y();
 
         return ray {
             .origin    = origin + offset,
-            .direction = lower_left + u * right + v * up - origin - offset,
+            .direction = lower_left + s * horizontal + t * vertical - origin - offset,
         };
     }
 };
@@ -55,8 +56,11 @@ inline camera create_camera( const fov_camera_parameters& p )
     auto lower_left_corner = origin - horizontal / 2.f - vertical / 2.f - p.focus_distance * w;
 
     return camera { .origin      = origin,
-                    .right       = horizontal,
-                    .up          = vertical,
+                    .u           = u,
+                    .v           = v,
+                    .w           = w,
+                    .horizontal  = horizontal,
+                    .vertical    = vertical,
                     .lower_left  = lower_left_corner,
                     .lens_radius = p.aperture / 2.f };
 }

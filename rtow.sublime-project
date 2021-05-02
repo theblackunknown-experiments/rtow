@@ -118,7 +118,7 @@
             "working_dir": "C:/builds/rtow"
         },
         {
-            "shell_cmd": "Release\\rtow.exe > image.ppm",
+            "shell_cmd": "Release\\rtow.exe > rtow.ppm",
             "name": "rtow (Release)",
             "variants":
             [

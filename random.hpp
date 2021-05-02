@@ -11,13 +11,13 @@ struct basic_random_generator
     std::random_device device;
 };
 
-vec3 random_vec3( basic_random_generator& gen )
+float random_float( basic_random_generator& gen, float a = 0.0f, float b = 1.0f )
 {
-    std::uniform_real_distribution<float> distribution;
-    return { distribution( gen.device ), distribution( gen.device ), distribution( gen.device ) };
+    std::uniform_real_distribution<float> distribution( a, b );
+    return distribution( gen.device );
 }
 
-vec3 random_vec3( basic_random_generator& gen, float a, float b )
+vec3 random_vec3( basic_random_generator& gen, float a = 0.0f, float b = 1.0f )
 {
     std::uniform_real_distribution<float> distribution( a, b );
     return { distribution( gen.device ), distribution( gen.device ), distribution( gen.device ) };
