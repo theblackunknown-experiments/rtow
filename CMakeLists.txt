@@ -63,10 +63,12 @@ target_precompile_headers(rtow
         <charconv>
 
         <iostream>
+        <fstream>
         <iosfwd>
 
         <cmath>
         <cstring>
+        <cstdlib>
 
         <limits>
         <memory>

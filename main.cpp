@@ -17,6 +17,7 @@
 
 #include <charconv>
 #include <iostream>
+#include <fstream>
 
 #include <limits>
 #include <memory>
@@ -25,6 +26,7 @@
 #include <vector>
 
 #include <cstring>
+#include <cstdlib>
 
 namespace rtow {
 
@@ -62,12 +64,13 @@ int main( int argc, char* argv[] )
 {
     using namespace rtow;
 
-    bool  progress     = false;
-    int   height       = 800;
-    float aspect_ratio = 3.f / 2.f;
-    int   spp          = 500;
-    int   bounces      = 50;
-    float vfov         = 20.f;
+    bool  progress            = false;
+    int   height              = 800;
+    float aspect_ratio        = 3.f / 2.f;
+    int   spp                 = 500;
+    int   bounces             = 50;
+    float vfov                = 20.f;
+    int   output_stream_index = -1;
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -108,6 +111,11 @@ int main( int argc, char* argv[] )
             const char*       arg  = argv[i + 1];
             const std::size_t size = std::strlen( arg );
             std::from_chars( arg, arg + size, vfov );
+            ++i;
+        }
+        else if ( strstr( argv[i], "-o" ) || strstr( argv[i], "--output" ) )
+        {
+            output_stream_index = i + 1;
             ++i;
         }
     }
@@ -181,9 +189,24 @@ int main( int argc, char* argv[] )
     intersector_collection.emplace<intersection_table_sphere>( point { -4.f, 1.f, 0.f }, 1.0f, &material_left );
     intersector_collection.emplace<intersection_table_sphere>( point { +4.f, 1.f, 0.f }, 1.0f, &material_right );
 
+    std::ostream* stream = nullptr;
+    std::ofstream output_file_stream;
+    if ( output_stream_index >= 0 )
+    {
+        output_file_stream.open( argv[output_stream_index], std::ios_base::out );
+        if ( !output_file_stream.is_open() )
+            return EXIT_FAILURE;
+
+        stream = &output_file_stream;
+    }
+    else
+    {
+        stream = &std::cout;
+    }
+
     std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
 
-    std::cout << "P3\n" << width << ' ' << height << "\n255\n";
+    *stream << "P3\n" << width << ' ' << height << "\n255\n";
 
     for ( int j = height - 1; j >= 0; --j )
     {
@@ -202,7 +225,7 @@ int main( int argc, char* argv[] )
                 c += ray_color( intersector_collection, generator, r, bounces );
             }
 
-            write_color( std::cout, c, spp );
+            write_color( *stream, c, spp );
         }
     }
 
@@ -210,4 +233,10 @@ int main( int argc, char* argv[] )
         std::cerr << std::endl;
 
     std::cerr << "Done." << std::endl;
+
+    if ( output_stream_index >= 0 )
+    {
+        output_file_stream.close();
+    }
+    return EXIT_SUCCESS;
 }

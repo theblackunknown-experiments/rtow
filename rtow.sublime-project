@@ -43,39 +43,6 @@
                     "cmd":
                     [
                         "ninja",
-                        "-f", "build-Debug.ninja",
-                        "-t",
-                        "clean"
-                    ],
-                    "name": "Clean (Debug)"
-                },
-                {
-                    "cmd":
-                    [
-                        "ninja",
-                        "-f", "build-Debug.ninja",
-                        "-v",
-                        "-k",
-                        "20",
-                        "$file^"
-                    ],
-                    "name": "Current (Debug)",
-                    "selector": "source.c++"
-                },
-                {
-                    "cmd":
-                    [
-                        "ninja",
-                        "-f", "build-Debug.ninja",
-                        "-v",
-                        "rtow"
-                    ],
-                    "name": "rtow (Debug)"
-                },
-                {
-                    "cmd":
-                    [
-                        "ninja",
                         "-f", "build-Release.ninja",
                         "-t",
                         "clean"
@@ -108,6 +75,72 @@
                 {
                     "cmd":
                     [
+                        "ninja",
+                        "-f", "build-RelWithDebInfo.ninja",
+                        "-t",
+                        "clean"
+                    ],
+                    "name": "Clean (RelWithDebInfo)"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-RelWithDebInfo.ninja",
+                        "-v",
+                        "-k",
+                        "20",
+                        "$file^"
+                    ],
+                    "name": "Current (RelWithDebInfo)",
+                    "selector": "source.c++"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-RelWithDebInfo.ninja",
+                        "-v",
+                        "rtow"
+                    ],
+                    "name": "rtow (RelWithDebInfo)"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Debug.ninja",
+                        "-t",
+                        "clean"
+                    ],
+                    "name": "Clean (Debug)"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Debug.ninja",
+                        "-v",
+                        "-k",
+                        "20",
+                        "$file^"
+                    ],
+                    "name": "Current (Debug)",
+                    "selector": "source.c++"
+                },
+                {
+                    "cmd":
+                    [
+                        "ninja",
+                        "-f", "build-Debug.ninja",
+                        "-v",
+                        "rtow"
+                    ],
+                    "name": "rtow (Debug)"
+                },
+                {
+                    "cmd":
+                    [
                         "rm",
                         "-rf",
                         "*"
@@ -118,17 +151,91 @@
             "working_dir": "C:/builds/rtow"
         },
         {
-            "shell_cmd": "Release\\rtow.exe > rtow.ppm",
+            "cmd": [
+                "Release/rtow.exe",
+                "-o",
+                "rtow.ppm"
+            ],
             "name": "rtow (Release)",
             "variants":
             [
                 {
-                    "shell_cmd": "Release\\rtow.exe -h 480 -as 1.33 > 640x480.ppm",
+                    "cmd": [
+                        "Release/rtow.exe",
+                        "-h", "480",
+                        "-as", "1.33",
+                        "-o", "640x480.ppm"
+                    ],
                     "name": "rtow (Release) - 480p 4/3"
                 },
                 {
-                    "shell_cmd": "Release\\rtow.exe -h 1080 -as 1.78 > 1280x1080.ppm",
+                    "cmd": [
+                        "Release/rtow.exe",
+                        "-h", "1080",
+                        "-as", "1.78",
+                        "-o", "1280x1080.ppm"
+                    ],
                     "name": "rtow (Release) - 1080p 16/9"
+                }
+            ],
+            "working_dir": "C:/builds/rtow"
+        },
+        {
+            "cmd": [
+                "RelWithDebInfo/rtow.exe",
+                "-o",
+                "rtow.ppm"
+            ],
+            "name": "rtow (RelWithDebInfo)",
+            "variants":
+            [
+                {
+                    "cmd": [
+                        "RelWithDebInfo/rtow.exe",
+                        "-h", "480",
+                        "-as", "1.33",
+                        "-o", "640x480.ppm"
+                    ],
+                    "name": "rtow (RelWithDebInfo) - 480p 4/3"
+                },
+                {
+                    "cmd": [
+                        "RelWithDebInfo/rtow.exe",
+                        "-h", "1080",
+                        "-as", "1.78",
+                        "-o", "1280x1080.ppm"
+                    ],
+                    "name": "rtow (RelWithDebInfo) - 1080p 16/9"
+                }
+            ],
+            "working_dir": "C:/builds/rtow"
+        },
+        {
+            "cmd": [
+                "Debug/rtow.exe",
+                "-o",
+                "rtow.ppm"
+            ],
+            "name": "rtow (Debug)",
+            "variants":
+            [
+                {
+                    "cmd": [
+                        "Debug/rtow.exe",
+                        "-h", "480",
+                        "-as", "1.33",
+                        "-o", "640x480.ppm"
+                    ],
+                    "name": "rtow (Debug) - 480p 4/3"
+                },
+                {
+                    "cmd": [
+                        "Debug/rtow.exe",
+                        "-h", "1080",
+                        "-as", "1.78",
+                        "-o", "1280x1080.ppm"
+                    ],
+                    "name": "rtow (Debug) - 1080p 16/9"
                 }
             ],
             "working_dir": "C:/builds/rtow"
