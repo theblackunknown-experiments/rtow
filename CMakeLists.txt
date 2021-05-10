@@ -69,11 +69,16 @@ target_precompile_headers(rtow
         <cmath>
         <cstring>
         <cstdlib>
+        <cassert>
+
+        <atomic>
+        <thread>
 
         <limits>
         <memory>
         <random>
         <utility>
+        <functional>
 
         <vector>
 )

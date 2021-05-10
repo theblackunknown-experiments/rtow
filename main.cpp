@@ -22,55 +22,53 @@
 #include <limits>
 #include <memory>
 #include <random>
+#include <functional>
+
+#include <atomic>
+#include <thread>
 
 #include <vector>
 
+#include <cassert>
 #include <cstring>
 #include <cstdlib>
 
 namespace rtow {
 
-constexpr float kNear = 1e-3f;
-constexpr float kFar  = std::numeric_limits<float>::infinity();
-
-color ray_color( const intersection_table& intersector, basic_random_generator& gen, const ray& r, int bounces )
-
+struct light_transport_simple_parameters
 {
-    if ( bounces < 0 )
-        return { 0.f, 0.f, 0.f };
+    int spp;
+    int bounces;
+};
 
-    intersection_record record;
-    if ( intersector.intersect( r, kNear, kFar, record ) )
-    {
-        ray   scattered;
-        color attenuation;
-        if ( record.material->scatter( r, record, gen, attenuation, scattered ) )
-            return attenuation * ray_color( intersector, gen, scattered, bounces - 1 );
-        else
-            return { 0.f, 0.f, 0.f };
-    }
+color ray_color( const intersection_table& intersector, basic_random_generator& gen, const ray& r, int bounces );
 
-    constexpr color a { 1.f, 1.f, 1.f };
-    constexpr color b { .5f, .7f, 1.f };
-
-    vec3 unit = normalize( r.direction );
-
-    auto t = 0.5 * ( unit.y() + 1.f );
-    return a + t * ( b - a );
-}
+void process_scanlines(
+    int                                      start,
+    int                                      end,
+    int                                      height,
+    int                                      width,
+    const camera&                            camera,
+    const intersection_table&                world,
+    const light_transport_simple_parameters& p,
+    std::vector<color>&                      framebuffer );
 }  // namespace rtow
 
 int main( int argc, char* argv[] )
 {
     using namespace rtow;
 
-    bool  progress            = false;
-    int   height              = 800;
-    float aspect_ratio        = 3.f / 2.f;
-    int   spp                 = 500;
-    int   bounces             = 50;
-    float vfov                = 20.f;
-    int   output_stream_index = -1;
+    bool         progress             = false;
+    int          height               = 800;
+    float        aspect_ratio         = 3.f / 2.f;
+    int          spp                  = 500;
+    int          bounces              = 50;
+    float        vfov                 = 20.f;
+    int          output_stream_index  = -1;
+    auto         hardware_concurrency = std::thread::hardware_concurrency();
+    unsigned int thread_count         = hardware_concurrency;
+
+    std::ios::sync_with_stdio( false );
 
     for ( int i = 0; i < argc; ++i )
     {
@@ -118,6 +116,37 @@ int main( int argc, char* argv[] )
             output_stream_index = i + 1;
             ++i;
         }
+        else if ( strstr( argv[i], "-j" ) || strstr( argv[i], "--jobs" ) )
+        {
+            const char*       arg  = argv[i + 1];
+            const std::size_t size = std::strlen( arg );
+
+            int concurrency = 0;
+            std::from_chars( arg, arg + size, concurrency );
+            ++i;
+
+            if ( concurrency == 0 )
+            {
+                thread_count = hardware_concurrency;
+            }
+            else if ( concurrency > 0 )
+            {
+                thread_count = concurrency;
+            }
+            else  // if ( concurrency < 0 )
+            {
+                assert( hardware_concurrency > concurrency );
+                if ( hardware_concurrency > concurrency )
+                    thread_count = hardware_concurrency - concurrency;
+                else
+                {
+                    std::cerr << "concurrency request is too low (" << concurrency
+                              << ") vs actual hardware concurrency (" << hardware_concurrency
+                              << "), using a single thread instead" << std::endl;
+                    thread_count = 1;
+                }
+            }
+        }
     }
 
     int width = static_cast<int>( aspect_ratio * height );
@@ -134,10 +163,7 @@ int main( int argc, char* argv[] )
         .focus_distance = 10.f,
     } );
 
-    std::ios::sync_with_stdio( false );
-
-    basic_random_generator                generator;
-    std::uniform_real_distribution<float> jitter( 0.f, 1.f );
+    basic_random_generator generator;
 
     material_lambertian material_ground( color { 0.5f, 0.5f, 0.5f } );
     material_dielectric material_dielectric( 1.5f );
@@ -204,33 +230,55 @@ int main( int argc, char* argv[] )
         stream = &std::cout;
     }
 
-    std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ")" << std::endl;
+    std::cerr << "Rendering image " << width << "x" << height << " (aspect ratio: " << aspect_ratio << ") [with "
+              << thread_count << " concurrent threads]" << std::endl;
+
+    std::vector<std::thread> pool( thread_count );
+
+    auto chunk_size  = height / thread_count;
+    auto chunk_extra = height % thread_count;
+
+    light_transport_simple_parameters p { .spp = spp, .bounces = bounces };
+
+    std::vector<color> framebuffer( height * width );
+
+    for ( auto idx = 0u; idx < thread_count; ++idx )
+    {
+        auto start = ( idx + 0 ) * chunk_size;
+        auto end   = ( idx + 1 ) * chunk_size;
+        if ( idx == thread_count - 1 )
+        {
+            end += chunk_extra;
+        }
+        assert( start < end );
+        pool[idx] = std::thread(
+            process_scanlines,
+            start,
+            end,
+            height,
+            width,
+            camera,
+            std::cref( intersector_collection ),
+            p,
+            std::ref( framebuffer ) );
+    }
+
+    for ( std::thread& t : pool )
+        t.join();
+
+    pool.clear();
 
     *stream << "P3\n" << width << ' ' << height << "\n255\n";
 
     for ( int j = height - 1; j >= 0; --j )
     {
-        if ( progress )
-            std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for ( int i = 0; i < width; ++i )
         {
-            color c { 0.f, 0.f, 0.f };
-            for ( int s = 0; s < spp; ++s )
-            {
-                auto u = float( i + jitter( generator.device ) ) / ( width - 1 );
-                auto v = float( j + jitter( generator.device ) ) / ( height - 1 );
-
-                ray r = camera.generate( generator, u, v );
-
-                c += ray_color( intersector_collection, generator, r, bounces );
-            }
-
+            auto   index = j * width + i;
+            color& c     = framebuffer.at( index );
             write_color( *stream, c, spp );
         }
     }
-
-    if ( progress )
-        std::cerr << std::endl;
 
     std::cerr << "Done." << std::endl;
 
@@ -240,3 +288,67 @@ int main( int argc, char* argv[] )
     }
     return EXIT_SUCCESS;
 }
+
+namespace rtow {
+
+constexpr float kNear = 1e-3f;
+constexpr float kFar  = std::numeric_limits<float>::infinity();
+
+void process_scanlines(
+    int                                      start,
+    int                                      end,
+    int                                      height,
+    int                                      width,
+    const camera&                            camera,
+    const intersection_table&                world,
+    const light_transport_simple_parameters& p,
+    std::vector<color>&                      framebuffer )
+{
+    basic_random_generator generator;
+    for ( int j = start; j < end; ++j )
+    {
+        for ( int i = 0; i < width; ++i )
+        {
+            color c { 0.f, 0.f, 0.f };
+            for ( int s = 0; s < p.spp; ++s )
+            {
+                auto u = float( i + random_float( generator ) ) / ( width - 1 );
+                auto v = float( j + random_float( generator ) ) / ( height - 1 );
+
+                ray r = camera.generate( generator, u, v );
+
+                c += ray_color( world, generator, r, p.bounces );
+            }
+
+            auto idx              = j * width + i;
+            framebuffer.at( idx ) = c;
+        }
+    }
+}
+
+color ray_color( const intersection_table& intersector, basic_random_generator& gen, const ray& r, int bounces )
+
+{
+    if ( bounces < 0 )
+        return { 0.f, 0.f, 0.f };
+
+    intersection_record record;
+    if ( intersector.intersect( r, kNear, kFar, record ) )
+    {
+        ray   scattered;
+        color attenuation;
+        if ( record.material->scatter( r, record, gen, attenuation, scattered ) )
+            return attenuation * ray_color( intersector, gen, scattered, bounces - 1 );
+        else
+            return { 0.f, 0.f, 0.f };
+    }
+
+    constexpr color a { 1.f, 1.f, 1.f };
+    constexpr color b { .5f, .7f, 1.f };
+
+    vec3 unit = normalize( r.direction );
+
+    auto t = 0.5 * ( unit.y() + 1.f );
+    return a + t * ( b - a );
+}
+}  // namespace rtow
