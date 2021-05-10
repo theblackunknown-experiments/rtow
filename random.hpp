@@ -8,7 +8,7 @@ namespace rtow {
 
 struct basic_random_generator
 {
-    std::random_device device;
+    std::default_random_engine device;
 };
 
 float random_float( basic_random_generator& gen, float a = 0.0f, float b = 1.0f )
